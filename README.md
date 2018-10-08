@@ -8,6 +8,8 @@ The server for a very simple open world (not massively) multiplayer online game
 A virtualenv is also highly recommended.
 
 ## Usage
+Copy the `proto/` folder from [mini-mmo-client](https://github.com/jenningsm42/mini-mmo-client) into the root directory of this repository first!
+
 To install:
 
 ```
