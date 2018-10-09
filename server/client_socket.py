@@ -12,7 +12,8 @@ class ClientSocket:
         self.sock = sock
         self.host = address[0]
         self.port = address[1]
-        self.player = None
+        self.username = None
+        self.player_id = None
 
     def __repr__(self):
         return f'<Client host={self.host} port={self.port}>'

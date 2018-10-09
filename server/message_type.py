@@ -8,6 +8,7 @@ class MessageType(IntEnum):
     login_response = 3
     register_request = 4
     register_response = 5
+
     player_move = 6
     other_player_move = 7
     player_stop = 8

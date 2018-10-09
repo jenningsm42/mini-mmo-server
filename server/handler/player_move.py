@@ -6,23 +6,30 @@ from server.message import Message
 
 from server.proto.PlayerMove_pb2 import (
     PlayerMove, OtherPlayerMove, PlayerStop, OtherPlayerStop)
+from server.service.player import PlayerService
 
 
 @register_handler(MessageType.player_move)
-async def player_move(message, client, state, broadcast):
+async def player_move(message, client, broadcast):
     info = PlayerMove()
     info.ParseFromString(message.serialized_message)
 
-    client.player.last_x = info.current_x
-    client.player.last_y = info.current_y
-    client.player.velocity_x = info.velocity_x
-    client.player.velocity_y = info.velocity_y
-    client.player.last_position_update = datetime.now()
+    with PlayerService() as service:
+        player = service.get(client.player_id)
+        if not player:
+            raise Exception('Received player_move event for invalid player!')
+
+        character = player.character
+        character.last_x = info.x
+        character.last_y = info.y
+        character.velocity_x = info.velocity_x
+        character.velocity_y = info.velocity_y
+        character.last_position_update = datetime.now()
 
     broadcast_message = OtherPlayerMove()
-    broadcast_message.player_id = client.player.player_id
-    broadcast_message.starting_x = info.current_x
-    broadcast_message.starting_y = info.current_y
+    broadcast_message.player_id = client.player_id
+    broadcast_message.x = info.x
+    broadcast_message.y = info.y
     broadcast_message.velocity_x = info.velocity_x
     broadcast_message.velocity_y = info.velocity_y
 
@@ -33,20 +40,26 @@ async def player_move(message, client, state, broadcast):
 
 
 @register_handler(MessageType.player_stop)
-async def player_stop(message, client, state, broadcast):
+async def player_stop(message, client, broadcast):
     info = PlayerStop()
     info.ParseFromString(message.serialized_message)
 
-    client.player.last_x = info.stopped_x
-    client.player.last_y = info.stopped_y
-    client.player.velocity_x = 0
-    client.player.velocity_y = 0
-    client.player.last_position_update = datetime.now()
+    with PlayerService() as service:
+        player = service.get(client.player_id)
+        if not player:
+            raise Exception('Received player_stop event for invalid player!')
+
+        character = player.character
+        character.last_x = info.x
+        character.last_y = info.y
+        character.velocity_x = 0
+        character.velocity_y = 0
+        character.last_position_update = datetime.now()
 
     broadcast_message = OtherPlayerStop()
     broadcast_message.player_id = client.player.player_id
-    broadcast_message.stopped_x = info.stopped_x
-    broadcast_message.stopped_y = info.stopped_y
+    broadcast_message.x = info.x
+    broadcast_message.x = info.y
 
     await broadcast(Message(
         message_type=MessageType.other_player_stop,

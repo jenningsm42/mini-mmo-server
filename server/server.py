@@ -8,7 +8,8 @@ from .message import Message
 from .message_type import MessageType
 from .proto.PlayerJoin_pb2 import PlayerLeave
 from .server_socket import ServerSocket
-from .server_state import ServerState
+from .service.player import PlayerService
+from .service.account import AccountService
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,6 @@ class Server:
         self.executor = concurrent.futures.ThreadPoolExecutor()
 
         self.sock = ServerSocket(port=self.port)
-        self.state = ServerState()
 
     async def run(self):
         while True:
@@ -66,9 +66,7 @@ class Server:
                                 await asyncio.get_event_loop().run_in_executor(
                                     self.executor,
                                     run_handler,
-                                    handler(m, s,
-                                            self.state,
-                                            self.get_broadcast()))
+                                    handler(m, s, self.get_broadcast()))
                             except Exception:
                                 logger.exception('Exception in handler')
                         else:
@@ -78,7 +76,7 @@ class Server:
                         await asyncio.get_event_loop().run_in_executor(
                             self.executor,
                             run_handler,
-                            self.disconnect_player(s, self.get_broadcast()))
+                            self.disconnect_user(s, self.get_broadcast()))
                         s.close()
                         self.clients.remove(s)
 
@@ -89,14 +87,21 @@ class Server:
                     client.send(message)
         return broadcast
 
-    async def disconnect_player(self, client, broadcast):
-        if client.player is None:
+    async def disconnect_user(self, client, broadcast):
+        if client.username is None:
+            return
+
+        with AccountService() as service:
+            service.logout(client.username)
+
+        if client.player_id is None:
             return
 
         player_leave_message = PlayerLeave()
-        player_leave_message.player_id = client.player.player_id
+        player_leave_message.player_id = client.player_id
 
-        self.state.players.remove_player(client.player.player_id)
+        with PlayerService() as service:
+            service.remove(client.player_id)
 
         await broadcast(Message(
             message_type=MessageType.player_leave,
