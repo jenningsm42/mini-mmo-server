@@ -29,12 +29,10 @@ class AccountService(Base):
 
         hashed = base64.b64encode(hashlib.sha256(password.encode()).digest())
 
-        print(hashed)
         account = Account(
             username=username,
             password_hash=bcrypt.hashpw(hashed, bcrypt.gensalt()),
             logged_in=False)
-        print(account.password_hash)
 
         self.session.add(account)
 
@@ -50,12 +48,32 @@ class AccountService(Base):
         if not account:
             raise AccountNotFoundError()
 
-        print(account.password_hash)
         hashed = base64.b64encode(hashlib.sha256(password.encode()).digest())
         if bcrypt.checkpw(hashed, account.password_hash):
             return account
 
         raise InvalidPasswordError()
+
+    def get_characters(self, username):
+        account = self.session.query(Account).filter(
+            Account.username == username).first()
+        if not account:
+            raise AccountNotFoundError()
+
+        return account.characters
+
+    def add_character(self, username, character):
+        account = self.session.query(Account).filter(
+            Account.username == username).first()
+        if not account:
+            raise AccountNotFoundError()
+
+        account.characters.append(character)
+        self.session.flush()
+
+        account = self.session.query(Account).filter(
+            Account.username == username).first()
+        return account.characters[-1].id
 
     def logout(self, username):
         account = self.session.query(Account).filter(

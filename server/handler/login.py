@@ -5,6 +5,7 @@ from server.message import Message
 from server.proto.Login_pb2 import LoginRequest, LoginResponse
 from server.service.account import (
     AccountService, AccountNotFoundError, InvalidPasswordError)
+from server.service.player import PlayerService
 
 
 @register_handler(MessageType.login_request)
@@ -24,6 +25,12 @@ async def login(message, client, broadcast):
             response.success = True
             client.username = account.username
             account.logged_in = True
+
+    if response.success:
+        with PlayerService() as service:
+            account = service.session.merge(account)
+            for character in account.characters:
+                service.remove(character.id)
 
     client.send(Message(
         message_type=MessageType.login_response,

@@ -4,6 +4,7 @@ from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
 
 from .base import Base
 from .account import Account
+from .player import Player
 
 
 class Character(Base):
@@ -11,8 +12,10 @@ class Character(Base):
 
     id = Column(Integer, primary_key=True)
     account_username = Column(String, ForeignKey(Account.username))
+    player_id = Column(Integer, ForeignKey(Player.id))
 
     name = Column(String, nullable=False)
+    color = Column(Integer, nullable=False)
 
     last_x = Column(Float, nullable=False)
     last_y = Column(Float, nullable=False)

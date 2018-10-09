@@ -14,4 +14,5 @@ class Base:
             self.session.rollback()
         else:
             self.session.commit()
+        self.session.expunge_all()
         self.session.close()

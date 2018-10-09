@@ -3,8 +3,10 @@ from server.model.player import Player
 
 
 class PlayerService(Base):
-    def create(self, character_id):
-        player = Player(id=character_id)
+    def create(self, character):
+        player = Player(
+            id=character.id,
+            character=character)
         self.session.add(player)
 
     def get(self, character_id):
