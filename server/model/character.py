@@ -11,10 +11,10 @@ class Character(Base):
     __tablename__ = 'characters'
 
     id = Column(Integer, primary_key=True)
-    account_username = Column(String, ForeignKey(Account.username))
+    account_username = Column(String(256), ForeignKey(Account.username))
     player_id = Column(Integer, ForeignKey(Player.id))
 
-    name = Column(String, nullable=False)
+    name = Column(String(256), nullable=False)
     color = Column(Integer, nullable=False)
 
     last_x = Column(Float, nullable=False)

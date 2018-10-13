@@ -4,10 +4,14 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
+asn1crypto==0.24.0        # via cryptography
 bcrypt==3.1.4
-cffi==1.11.5              # via bcrypt
+cffi==1.11.5              # via bcrypt, cryptography
 click==6.7
+cryptography==2.3.1       # via pymysql
+idna==2.7                 # via cryptography
 protobuf==3.6.1
 pycparser==2.19           # via cffi
-six==1.11.0               # via bcrypt, protobuf
+pymysql==0.9.2
+six==1.11.0               # via bcrypt, cryptography, protobuf
 sqlalchemy==1.2.12

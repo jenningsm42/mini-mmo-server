@@ -1,4 +1,5 @@
 bcrypt
 click
+pymysql
 protobuf
 sqlalchemy

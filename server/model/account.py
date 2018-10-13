@@ -7,7 +7,7 @@ from .base import Base
 class Account(Base):
     __tablename__ = 'accounts'
 
-    username = Column(String, primary_key=True)
+    username = Column(String(256), primary_key=True)
     password_hash = Column(LargeBinary, nullable=False)
 
     logged_in = Column(Boolean, nullable=False)

@@ -1,7 +1,9 @@
 import asyncio
 import logging
+import time
 
 from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError
 import click
 
 from .model.base import Base
@@ -19,7 +21,19 @@ def main(port, verbose, db):
 
     engine = create_engine(db)
     Session.configure(bind=engine)
-    Base.metadata.create_all(engine)
+
+    delay = 5
+    while True:
+        try:
+            Base.metadata.create_all(engine)
+        except OperationalError:
+            logging.error(
+                'Could not connect to database, retrying in %s seconds',
+                delay)
+            time.sleep(delay)
+            delay *= 1.5
+        else:
+            break
 
     s = Server(port=port)
     logging.info('Running')

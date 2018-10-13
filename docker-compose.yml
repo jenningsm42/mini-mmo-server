@@ -1,0 +1,24 @@
+version: '3.1'
+services:
+    server:
+        build:
+            context: .
+            dockerfile: ./container/Dockerfile
+        image: jenningsm/mini-mmo:server-latest
+        command: -p 1337 -v --db mysql+pymysql://test:test@db/foobar
+        restart: always
+        expose:
+            - 1337
+        ports:
+            - 1337:1337
+    db:
+        image: mysql:8.0.12
+        command: mysqld --user root --verbose
+        restart: always
+        ports:
+            - 3306:3306
+        environment:
+            MYSQL_DATABASE: foobar
+            MYSQL_USER: test
+            MYSQL_PASSWORD: test
+            MYSQL_ROOT_PASSWORD: root

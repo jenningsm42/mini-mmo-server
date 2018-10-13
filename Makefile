@@ -5,11 +5,11 @@ PROTO_GEN_FILES := $(patsubst $(PROTO_DIR)/%.proto,$(SRC_DIR)/proto/%_pb2.py,$(P
 
 all: server
 
-.SECONDARY:
-$(SRC_DIR)/proto/%_pb2.py: $(PROTO_DIR)/%.proto
-	protoc -I=$(PROTO_DIR) --python_out=$(SRC_DIR)/proto $<
+protobuf:
+	@echo '** Building protobuf files'
+	protoc -I=$(PROTO_DIR) --python_out=$(SRC_DIR)/proto $(PROTO_DIR)/*
 
-server: $(PROTO_GEN_FILES)
+server: protobuf
 	@echo '** Building the server'
 	pip install -e . -r requirements.txt
 
@@ -17,4 +17,4 @@ clean:
 	@echo '** Cleaning project'
 	$(RM) $(PROTO_GEN_FILES)
 
-.PHONY: all server clean
+.PHONY: all server protobuf clean
