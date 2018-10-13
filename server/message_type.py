@@ -17,3 +17,10 @@ class MessageType(IntEnum):
     player_leave = 11
     players_request = 12
     players_response = 13
+    join_request = 14
+    join_response = 15
+
+    characters_request = 16
+    characters_response = 17
+    create_character_request = 18
+    create_character_response = 19

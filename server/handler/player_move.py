@@ -57,9 +57,9 @@ async def player_stop(message, client, broadcast):
         character.last_position_update = datetime.now()
 
     broadcast_message = OtherPlayerStop()
-    broadcast_message.player_id = client.player.player_id
+    broadcast_message.player_id = client.player_id
     broadcast_message.x = info.x
-    broadcast_message.x = info.y
+    broadcast_message.y = info.y
 
     await broadcast(Message(
         message_type=MessageType.other_player_stop,

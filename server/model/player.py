@@ -1,11 +1,12 @@
-from sqlalchemy import Column, ForeignKey, Integer
+from sqlalchemy import Column, Integer
+from sqlalchemy.orm import relationship
 
 from .base import Base
-from .character import Character
 
 
 # Table of characters currently loaded into the game
 class Player(Base):
     __tablename__ = 'players'
 
-    id = Column(Integer, ForeignKey(Character.id), primary_key=True)
+    id = Column(Integer, primary_key=True)
+    character = relationship('Character', uselist=False)
