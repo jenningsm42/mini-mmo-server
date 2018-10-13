@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/jenningsm42/mini-mmo-server.svg?branch=master)](https://travis-ci.org/jenningsm42/mini-mmo-server)
 # mini-mmo-server
 The server for a very simple open world (not so massively) multiplayer online game. Mainly used as a playground for me to test various concepts in a networked environment.
 

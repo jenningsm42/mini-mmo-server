@@ -1,0 +1,18 @@
+sudo: required
+language: minimal
+services:
+    - docker
+jobs:
+    include:
+        - stage: test # No tests at the moment, so ensure it at least runs
+          name: test
+          script:
+              - docker-compose build
+              - docker-compose run server --db mysql+pymysql://test:test@db/foobar --dry-run
+          after_script: docker-compose down
+        - stage: deploy
+          name: deploy
+          script: ./container/push.sh
+stages:
+    - test
+    - deploy

@@ -11,6 +11,8 @@ services:
             - 1337
         ports:
             - 1337:1337
+        links:
+            - db
     db:
         image: mysql:8.0.12
         command: mysqld --user root --verbose

@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import sys
 import time
 
 from sqlalchemy import create_engine
@@ -15,7 +16,8 @@ from .service.session import Session
 @click.option('-p', '--port', default=1337)
 @click.option('-v', '--verbose', is_flag=True)
 @click.option('--db', default='sqlite:////tmp/foobar.db')
-def main(port, verbose, db):
+@click.option('--dry-run', is_flag=True)
+def main(port, verbose, db, dry_run):
     if verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
@@ -23,25 +25,34 @@ def main(port, verbose, db):
     Session.configure(bind=engine)
 
     delay = 5
+    tries = 5
+    rate = 1.5
     while True:
         try:
             Base.metadata.create_all(engine)
         except OperationalError:
+            if delay >= 5 * rate**tries:
+                logging.error('Could not connect to database, terminating')
+                sys.exit(1)
+
             logging.error(
                 'Could not connect to database, retrying in %s seconds',
                 delay)
             time.sleep(delay)
-            delay *= 1.5
+            delay *= rate
         else:
             break
 
     s = Server(port=port)
     logging.info('Running')
     try:
-        asyncio.run(s.run())
+        if not dry_run:
+            asyncio.run(s.run())
     except Exception:
         logging.exception('Stopped')
-        s.close()
+    else:
+        logging.info('Stopped')
+    s.close()
 
 
 if __name__ == '__main__':
