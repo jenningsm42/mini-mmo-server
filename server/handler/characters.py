@@ -25,7 +25,7 @@ async def characters_request(message, client, broadcast):
             character_info.x = character.last_x
             character_info.y = character.last_y
 
-    client.send(Message(
+    await client.send(Message(
         message_type=MessageType.characters_response,
         message=response))
 
@@ -52,7 +52,9 @@ async def create_character(message, client, broadcast):
 
     response.success = True
     response.character_id = character_id
+    response.x = character.last_x
+    response.y = character.last_y
 
-    client.send(Message(
+    await client.send(Message(
         message_type=MessageType.create_character_response,
         message=response))
