@@ -32,6 +32,6 @@ async def login(message, client, broadcast):
             for character in account.characters:
                 service.remove(character.id)
 
-    client.send(Message(
+    await client.send(Message(
         message_type=MessageType.login_response,
         message=response))

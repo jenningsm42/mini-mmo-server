@@ -22,6 +22,6 @@ async def register_account(message, client, broadcast):
         else:
             response.success = True
 
-    client.send(Message(
+    await client.send(Message(
         message_type=MessageType.register_response,
         message=response))

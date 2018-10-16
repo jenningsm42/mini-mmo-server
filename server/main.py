@@ -1,3 +1,4 @@
+from concurrent.futures import CancelledError
 import asyncio
 import logging
 import sys
@@ -10,6 +11,24 @@ import click
 from .model.base import Base
 from .server import Server
 from .service.session import Session
+
+
+async def serve(port, dry_run):
+    s = Server()
+    server = await asyncio.start_server(
+        s.handle_client, '127.0.0.1', port)
+
+    async with server:
+        logging.info('Running')
+        try:
+            if not dry_run:
+                await server.serve_forever()
+        except CancelledError:
+            logging.info('Stopped')
+        except Exception:
+            logging.exception('Stopped')
+        else:
+            logging.info('Stopped')
 
 
 @click.command()
@@ -43,16 +62,7 @@ def main(port, verbose, db, dry_run):
         else:
             break
 
-    s = Server(port=port)
-    logging.info('Running')
-    try:
-        if not dry_run:
-            asyncio.run(s.run())
-    except Exception:
-        logging.exception('Stopped')
-    else:
-        logging.info('Stopped')
-    s.close()
+    asyncio.run(serve(port, dry_run))
 
 
 if __name__ == '__main__':

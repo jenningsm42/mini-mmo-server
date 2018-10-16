@@ -37,7 +37,7 @@ async def player_join(message, client, broadcast):
         player_info.color = other_character.color
         player_info.name = other_character.name
 
-    client.send(Message(
+    await client.send(Message(
         message_type=MessageType.players_response,
         message=players_response))
 
@@ -79,6 +79,6 @@ async def players_state(message, client, broadcast):
         player_info.velocity_x = character.velocity_x
         player_info.velocity_y = character.velocity_y
 
-    client.send(Message(
+    await client.send(Message(
         message_type=MessageType.players_response,
         message=players_response))
