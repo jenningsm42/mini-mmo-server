@@ -1,12 +1,13 @@
-[![Build Status](https://travis-ci.org/jenningsm42/mini-mmo-server.svg?branch=master)](https://travis-ci.org/jenningsm42/mini-mmo-server)
 # mini-mmo-server
-The server for a very simple open world (not so massively) multiplayer online game. Mainly used as a playground for me to test various concepts in a networked environment.
+[![Build Status](https://travis-ci.org/jenningsm42/mini-mmo-server.svg?branch=master)](https://travis-ci.org/jenningsm42/mini-mmo-server)
+
+The server for a very simple open world (not so massively) multiplayer online game. Mainly used as a playground for me to test various concepts in a networked environment. The client can be found [here](https://github.com/jenningsm42/mini-mmo-client).
 
 ## Requirements
 * Protobuf compiler
 * Python 3.7
 
-A virtualenv is also highly recommended.
+A virtualenv is also highly recommended if running locally.
 
 ## Usage
 
@@ -35,6 +36,13 @@ $ docker-compose build
 Then run it,
 
 ```
+$ docker-compose up -d
+```
+
+Alternatively, the server image is pushed onto Docker Hub:
+
+```
+$ docker-compose pull
 $ docker-compose up -d
 ```
 

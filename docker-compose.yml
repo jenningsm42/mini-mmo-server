@@ -4,7 +4,7 @@ services:
         build:
             context: .
             dockerfile: ./container/Dockerfile
-        image: jenningsm/mini-mmo:server-latest
+        image: jenningsm/mini-mmo:latest
         command: -p 1337 -v --db mysql+pymysql://test:test@db/foobar
         restart: always
         expose:
