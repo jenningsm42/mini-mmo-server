@@ -1,5 +1,8 @@
 __pycache__/
+.idea/
+
+proto
+
 *.py[cod]
 *.egg-info
 
-proto

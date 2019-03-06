@@ -9,7 +9,7 @@ from server.service.player import PlayerService
 
 
 @register_handler(MessageType.login_request)
-async def login(message, client, broadcast):
+async def login(message, client, server):
     request = LoginRequest()
     request.ParseFromString(message.serialized_message)
 

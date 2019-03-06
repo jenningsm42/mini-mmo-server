@@ -7,7 +7,7 @@ from server.service.account import AccountService, AccountAlreadyExistsError
 
 
 @register_handler(MessageType.register_request)
-async def register_account(message, client, broadcast):
+async def register_account(message, client, server):
     request = RegisterRequest()
     request.ParseFromString(message.serialized_message)
 

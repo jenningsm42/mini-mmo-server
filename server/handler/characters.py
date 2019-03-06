@@ -11,7 +11,7 @@ from server.model.character import Character
 
 
 @register_handler(MessageType.characters_request)
-async def characters_request(message, client, broadcast):
+async def characters_request(message, client, server):
     response = CharactersResponse()
 
     with AccountService() as service:
@@ -31,7 +31,7 @@ async def characters_request(message, client, broadcast):
 
 
 @register_handler(MessageType.create_character_request)
-async def create_character(message, client, broadcast):
+async def create_character(message, client, server):
     info = CreateCharacterRequest()
     info.ParseFromString(message.serialized_message)
 

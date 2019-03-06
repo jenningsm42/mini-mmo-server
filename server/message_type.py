@@ -24,3 +24,6 @@ class MessageType(IntEnum):
     characters_response = 17
     create_character_request = 18
     create_character_response = 19
+
+    send_chat_message = 20
+    receive_chat_message = 21

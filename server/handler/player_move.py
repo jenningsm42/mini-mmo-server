@@ -10,7 +10,7 @@ from server.service.player import PlayerService
 
 
 @register_handler(MessageType.player_move)
-async def player_move(message, client, broadcast):
+async def player_move(message, client, server):
     info = PlayerMove()
     info.ParseFromString(message.serialized_message)
 
@@ -26,6 +26,8 @@ async def player_move(message, client, broadcast):
         character.velocity_y = info.velocity_y
         character.last_position_update = datetime.now()
 
+    server.players.update_position(client, (info.x, info.y))
+
     broadcast_message = OtherPlayerMove()
     broadcast_message.player_id = client.player_id
     broadcast_message.x = info.x
@@ -33,14 +35,14 @@ async def player_move(message, client, broadcast):
     broadcast_message.velocity_x = info.velocity_x
     broadcast_message.velocity_y = info.velocity_y
 
-    await broadcast(Message(
+    await server.broadcast(Message(
         message_type=MessageType.other_player_move,
         message=broadcast_message),
         exclude=client)
 
 
 @register_handler(MessageType.player_stop)
-async def player_stop(message, client, broadcast):
+async def player_stop(message, client, server):
     info = PlayerStop()
     info.ParseFromString(message.serialized_message)
 
@@ -56,12 +58,14 @@ async def player_stop(message, client, broadcast):
         character.velocity_y = 0
         character.last_position_update = datetime.now()
 
+    server.players.update_position(client, (info.x, info.y))
+
     broadcast_message = OtherPlayerStop()
     broadcast_message.player_id = client.player_id
     broadcast_message.x = info.x
     broadcast_message.y = info.y
 
-    await broadcast(Message(
+    await server.broadcast(Message(
         message_type=MessageType.other_player_stop,
         message=broadcast_message),
         exclude=client)

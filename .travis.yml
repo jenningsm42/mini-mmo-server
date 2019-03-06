@@ -15,7 +15,7 @@ jobs:
           after_script: docker-compose down
         - stage: deploy
           name: deploy
-          script: ./container/push.sh
+          script: travis_wait ./container/push.sh
 stages:
     - test
     - deploy

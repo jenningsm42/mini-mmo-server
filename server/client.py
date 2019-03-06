@@ -8,15 +8,22 @@ class DisconnectError(Exception):
 
 
 class Client:
-    def __init__(self, reader, writer):
+    def __init__(self, reader, writer, uuid):
         self.reader = reader
         self.writer = writer
+        self.hash = uuid.int
         self.host, self.port = writer.get_extra_info('peername')
         self.username = None
         self.player_id = None
 
     def __repr__(self):
         return f'<Client host={self.host} port={self.port}>'
+
+    def __hash__(self):
+        return self.hash
+
+    def __eq__(self, other):
+        return other is not None and self.hash == other.hash
 
     async def recv(self):
         if self.reader.at_eof():
