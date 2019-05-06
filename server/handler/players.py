@@ -9,7 +9,7 @@ from server.service.character import CharacterService
 
 
 @register_handler(MessageType.join_request)
-async def player_join(message, client, broadcast):
+async def player_join(message, client, server):
     info = JoinRequest()
     info.ParseFromString(message.serialized_message)
 
@@ -23,6 +23,7 @@ async def player_join(message, client, broadcast):
         service.create(character)
 
     client.player_id = info.character_id
+    server.players.add(client, character.get_position())
 
     players_response = PlayersResponse()
 
@@ -49,14 +50,14 @@ async def player_join(message, client, broadcast):
     player_join.color = character.color
     player_join.name = character.name
 
-    await broadcast(Message(
+    await server.broadcast(Message(
         message_type=MessageType.player_join,
         message=player_join),
         exclude=client)
 
 
 @register_handler(MessageType.players_request)
-async def players_state(message, client, broadcast):
+async def players_state(message, client, server):
     if not client.player_id:
         raise Exception('Received players_request event for invalid player!')
 

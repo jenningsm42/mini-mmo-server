@@ -1,12 +1,14 @@
 import asyncio
 import logging
+import uuid
 
 from .client import Client, DisconnectError
 from .message import Message
 from .message_type import MessageType
+from .player_collection import PlayerCollection
 from .proto.PlayerJoin_pb2 import PlayerLeave
-from .service.player import PlayerService
 from .service.account import AccountService
+from .service.player import PlayerService
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +26,10 @@ class Server:
     def __init__(self, port=1337):
         self.port = port
         self.clients = []
+        self.players = PlayerCollection()
 
     async def handle_client(self, reader, writer):
-        client = Client(reader, writer)
+        client = Client(reader, writer, uuid.uuid4())
         self.clients.append(client)
         logger.info(f'{client} has connected')
 
@@ -34,7 +37,7 @@ class Server:
             try:
                 m = await client.recv()
             except DisconnectError:
-                await self.disconnect_user(client, self.broadcast)
+                await self.disconnect_user(client)
                 break
 
             try:
@@ -50,9 +53,9 @@ class Server:
                 continue
 
             try:
-                await handler(m, client, self.broadcast)
+                await handler(m, client, self)
             except DisconnectError:
-                await self.disconnect_user(client, self.broadcast)
+                await self.disconnect_user(client)
                 break
             except Exception:
                 logger.exception('Handler raised exception')
@@ -61,16 +64,27 @@ class Server:
         writer.close()
 
     async def broadcast(self, message, exclude=None):
+        """" Broadcasts given message to all connected clients """
         coros = [client.send(message)
                  for client in self.clients
                  if client != exclude]
         await asyncio.gather(*coros)
 
-    async def disconnect_user(self, client, broadcast):
+    async def broadcast_in_range(self, message, center, radius, exclude=None):
+        """ Broadcasts given message to players within the given range """
+        coros = [client.send(message)
+                 for client in self.players.get_players_in_range(center, radius)
+                 if client != exclude]
+        await asyncio.gather(*coros)
+
+    async def disconnect_user(self, client):
         self.clients.remove(client)
 
+        # Never logged in - no need to log out
         if client.username is None:
             return
+
+        self.players.remove(client)
 
         with AccountService() as service:
             service.logout(client.username)
