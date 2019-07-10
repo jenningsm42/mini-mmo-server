@@ -31,12 +31,14 @@ async def player_join(message, client, server):
         player_info = players_response.players.add()
         player_info.player_id = other_character.id
         x, y = other_character.get_position()
-        player_info.x = x
-        player_info.y = y
+        player_info.character.x = x
+        player_info.character.y = y
         player_info.velocity_x = other_character.velocity_x
         player_info.velocity_y = other_character.velocity_y
-        player_info.color = other_character.color
-        player_info.name = other_character.name
+        player_info.character.body_color = other_character.body_color
+        player_info.character.shirt_color = other_character.shirt_color
+        player_info.character.legs_color = other_character.legs_color
+        player_info.character.name = other_character.name
 
     await client.send(Message(
         message_type=MessageType.players_response,
@@ -45,10 +47,12 @@ async def player_join(message, client, server):
     player_join = PlayerJoin()
     player_join.player_id = client.player_id
     x, y = character.get_position()
-    player_join.x = x
-    player_join.y = y
-    player_join.color = character.color
-    player_join.name = character.name
+    player_join.character.x = x
+    player_join.character.y = y
+    player_join.character.body_color = character.body_color
+    player_join.character.shirt_color = character.shirt_color
+    player_join.character.legs_color = character.legs_color
+    player_join.character.name = character.name
 
     await server.broadcast(Message(
         message_type=MessageType.player_join,

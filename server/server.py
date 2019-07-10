@@ -55,7 +55,10 @@ class Server:
             try:
                 await handler(m, client, self)
             except DisconnectError:
-                await self.disconnect_user(client)
+                try:
+                    await self.disconnect_user(client)
+                except Exception:
+                    logger.exception('Exception while disconnecting user')
                 break
             except Exception:
                 logger.exception('Handler raised exception')
@@ -100,5 +103,4 @@ class Server:
 
         await self.broadcast(Message(
             message_type=MessageType.player_leave,
-            message=player_leave_message),
-            exclude=client)
+            message=player_leave_message))

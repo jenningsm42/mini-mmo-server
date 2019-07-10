@@ -15,7 +15,9 @@ class Character(Base):
     player_id = Column(Integer, ForeignKey(Player.id))
 
     name = Column(String(256), nullable=False)
-    color = Column(Integer, nullable=False)
+    body_color = Column(Integer, nullable=False)
+    shirt_color = Column(Integer, nullable=False)
+    legs_color = Column(Integer, nullable=False)
 
     last_x = Column(Float, nullable=False)
     last_y = Column(Float, nullable=False)

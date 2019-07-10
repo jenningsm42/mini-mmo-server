@@ -21,7 +21,9 @@ async def characters_request(message, client, server):
             character_info = response.characters.add()
             character_info.character_id = character.id
             character_info.name = character.name
-            character_info.color = character.color
+            character_info.body_color = character.body_color
+            character_info.shirt_color = character.shirt_color
+            character_info.legs_color = character.legs_color
             character_info.x = character.last_x
             character_info.y = character.last_y
 
@@ -38,7 +40,9 @@ async def create_character(message, client, server):
     character = Character(
         account_username=client.username,
         name=info.name,
-        color=info.color,
+        body_color=info.body_color,
+        shirt_color=info.shirt_color,
+        legs_color=info.legs_color,
         last_x=300,
         last_y=300,
         velocity_x=0,
