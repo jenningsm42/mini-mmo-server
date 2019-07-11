@@ -1,7 +1,8 @@
 __pycache__/
 .idea/
 
-proto
+**/proto/*_pb2.py
+/proto
 
 *.py[cod]
 *.egg-info
