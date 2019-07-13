@@ -1,3 +1,4 @@
+from datetime import datetime
 import struct
 
 from .message import Message
@@ -15,6 +16,8 @@ class Client:
         self.host, self.port = writer.get_extra_info('peername')
         self.username = None
         self.player_id = None
+        self.last_message_time = datetime.now()
+        self.disconnecting = False
 
     def __repr__(self):
         return f'<Client host={self.host} port={self.port}>'
@@ -24,6 +27,9 @@ class Client:
 
     def __eq__(self, other):
         return other is not None and self.hash == other.hash
+
+    def set_last_message_time(self, time):
+        self.last_message_time = time
 
     async def recv(self):
         if self.reader.at_eof():

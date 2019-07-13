@@ -22,7 +22,9 @@ async def serve(port, dry_run):
         logging.info('Running')
         try:
             if not dry_run:
-                await server.serve_forever()
+                await asyncio.gather(
+                    server.serve_forever(),
+                    s.tick(Server.SLOW_TICK_DELAY))
         except CancelledError:
             logging.info('Stopped')
         except Exception:
