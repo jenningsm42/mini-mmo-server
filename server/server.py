@@ -1,3 +1,5 @@
+from collections import defaultdict
+from datetime import datetime
 import asyncio
 import logging
 import uuid
@@ -20,13 +22,28 @@ def register_handler(message_type):
     return decorator
 
 
+def register_slow_tick_event(func):
+    Server.TICK_EVENTS[Server.SLOW_TICK_DELAY].append(func)
+    return func
+
+
 class Server:
     HANDLERS = {}
+    TICK_EVENTS = defaultdict(list)
+
+    SLOW_TICK_DELAY = 500
 
     def __init__(self, port=1337):
         self.port = port
         self.clients = []
         self.players = PlayerCollection()
+
+    async def tick(self, delay):
+        """ Run registered tick events every delay milliseconds """
+        while True:
+            coros = [event(self) for event in Server.TICK_EVENTS[delay]]
+            await asyncio.gather(*coros)
+            await asyncio.sleep(delay / 1000)
 
     async def handle_client(self, reader, writer):
         client = Client(reader, writer, uuid.uuid4())
@@ -39,6 +56,8 @@ class Server:
             except DisconnectError:
                 await self.disconnect_user(client)
                 break
+
+            client.set_last_message_time(datetime.now())
 
             try:
                 message_type = MessageType(m.message_type)
@@ -76,11 +95,18 @@ class Server:
     async def broadcast_in_range(self, message, center, radius, exclude=None):
         """ Broadcasts given message to players within the given range """
         coros = [client.send(message)
-                 for client in self.players.get_players_in_range(center, radius)
+                 for client in self.players.get_players_in_range(
+                     center, radius)
                  if client != exclude]
         await asyncio.gather(*coros)
 
     async def disconnect_user(self, client):
+        if client.disconnecting:
+            return
+
+        client.disconnecting = True
+
+        client.writer.close()
         self.clients.remove(client)
 
         # Never logged in - no need to log out

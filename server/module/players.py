@@ -6,6 +6,7 @@ from server.proto.PlayerJoin_pb2 import (
     PlayersResponse, JoinRequest, PlayerJoin)
 from server.service.player import PlayerService
 from server.service.character import CharacterService
+from server.player_wrapper import PlayerWrapper
 
 
 @register_handler(MessageType.join_request)
@@ -23,14 +24,17 @@ async def player_join(message, client, server):
         service.create(character)
 
     client.player_id = info.character_id
-    server.players.add(client, character.get_position())
+    server.players.add(client, PlayerWrapper(character))
 
     players_response = PlayersResponse()
 
     for other_character in characters:
+        pw = PlayerWrapper(other_character)
+        pw.update_position()
+
         player_info = players_response.players.add()
         player_info.player_id = other_character.id
-        x, y = other_character.get_position()
+        x, y = pw.last_position
         player_info.character.x = x
         player_info.character.y = y
         player_info.velocity_x = other_character.velocity_x
@@ -46,9 +50,8 @@ async def player_join(message, client, server):
 
     player_join = PlayerJoin()
     player_join.player_id = client.player_id
-    x, y = character.get_position()
-    player_join.character.x = x
-    player_join.character.y = y
+    player_join.character.x = character.last_x
+    player_join.character.y = character.last_y
     player_join.character.body_color = character.body_color
     player_join.character.shirt_color = character.shirt_color
     player_join.character.legs_color = character.legs_color
@@ -75,10 +78,12 @@ async def players_state(message, client, server):
             continue
 
         character = player.character
+        pw = PlayerWrapper(character)
+        pw.update_position()
 
         player_info = players_response.players.add()
         player_info.player_id = player.id
-        x, y = character.get_position()
+        x, y = pw.last_position
         player_info.x = x
         player_info.y = y
         player_info.velocity_x = character.velocity_x

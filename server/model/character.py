@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
 
 from .base import Base
@@ -27,11 +25,3 @@ class Character(Base):
 
     def __repr__(self):
         return f'<Character id={self.id} name={self.name}>'
-
-    def get_position(self):
-        now = datetime.now()
-        delta = (now - self.last_position_update).total_seconds()
-        self.last_x = self.last_x + self.velocity_x * delta
-        self.last_y = self.last_y + self.velocity_y * delta
-        self.last_position_update = now
-        return self.last_x, self.last_y

@@ -7,6 +7,7 @@ from server.message import Message
 from server.proto.PlayerMove_pb2 import (
     PlayerMove, OtherPlayerMove, PlayerStop, OtherPlayerStop)
 from server.service.player import PlayerService
+from server.player_wrapper import PlayerWrapper
 
 
 @register_handler(MessageType.player_move)
@@ -26,7 +27,7 @@ async def player_move(message, client, server):
         character.velocity_y = info.velocity_y
         character.last_position_update = datetime.now()
 
-    server.players.update_position(client, (info.x, info.y))
+    server.players.update_player(client, PlayerWrapper(character))
 
     broadcast_message = OtherPlayerMove()
     broadcast_message.player_id = client.player_id
@@ -58,7 +59,7 @@ async def player_stop(message, client, server):
         character.velocity_y = 0
         character.last_position_update = datetime.now()
 
-    server.players.update_position(client, (info.x, info.y))
+    server.players.update_player(client, PlayerWrapper(character))
 
     broadcast_message = OtherPlayerStop()
     broadcast_message.player_id = client.player_id
