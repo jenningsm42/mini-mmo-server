@@ -1,10 +1,12 @@
 from collections import defaultdict
 from datetime import datetime
+from os.path import join
 import asyncio
 import logging
 import uuid
 
 from .client import Client, DisconnectError
+from .map import Map
 from .message import Message
 from .message_type import MessageType
 from .player_collection import PlayerCollection
@@ -27,19 +29,26 @@ def register_slow_tick_event(func):
     return func
 
 
+def register_fast_tick_event(func):
+    Server.TICK_EVENTS[Server.FAST_TICK_DELAY].append(func)
+    return func
+
+
 class Server:
     HANDLERS = {}
     TICK_EVENTS = defaultdict(list)
 
     SLOW_TICK_DELAY = 500
+    FAST_TICK_DELAY = 50
 
     def __init__(self, port=1337):
         self.port = port
         self.clients = []
-        self.players = PlayerCollection()
+        self.map = Map(join('data', 'map'), join('data', 'objects.yml'))
+        self.players = PlayerCollection(self.map)
 
     async def tick(self, delay):
-        """ Run registered tick events every delay milliseconds """
+        ''' Run registered tick events every delay milliseconds '''
         while True:
             coros = [event(self) for event in Server.TICK_EVENTS[delay]]
             await asyncio.gather(*coros)
@@ -86,16 +95,16 @@ class Server:
         writer.close()
 
     async def broadcast(self, message, exclude=None):
-        """" Broadcasts given message to all connected clients """
+        ''' Broadcasts given message to all connected clients '''
         coros = [client.send(message)
                  for client in self.clients
                  if client != exclude]
         await asyncio.gather(*coros)
 
     async def broadcast_in_range(self, message, center, radius, exclude=None):
-        """ Broadcasts given message to players within the given range """
+        ''' Broadcasts given message to players within the given range '''
         coros = [client.send(message)
-                 for client in self.players.get_players_in_range(
+                 for client in self.players.get_clients_in_range(
                      center, radius)
                  if client != exclude]
         await asyncio.gather(*coros)

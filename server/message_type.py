@@ -27,3 +27,6 @@ class MessageType(IntEnum):
 
     send_chat_message = 20
     receive_chat_message = 21
+
+    chunk_request = 22
+    chunk_response = 23

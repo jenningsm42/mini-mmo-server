@@ -1,0 +1,4 @@
+0:
+    name: "Rock"
+    aabb_width: 84
+    aabb_height: 20

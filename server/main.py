@@ -24,7 +24,8 @@ async def serve(port, dry_run):
             if not dry_run:
                 await asyncio.gather(
                     server.serve_forever(),
-                    s.tick(Server.SLOW_TICK_DELAY))
+                    s.tick(Server.SLOW_TICK_DELAY),
+                    s.tick(Server.FAST_TICK_DELAY))
         except CancelledError:
             logging.info('Stopped')
         except Exception:
@@ -62,9 +63,14 @@ def main(port, verbose, db, dry_run):
             time.sleep(delay)
             delay *= rate
         else:
+            logging.info('Connected to database at %s', db)
             break
 
-    asyncio.run(serve(port, dry_run))
+    while True and not dry_run:
+        try:
+            asyncio.run(serve(port, dry_run))
+        except Exception:
+            logging.exception('Restarting server')
 
 
 if __name__ == '__main__':

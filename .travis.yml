@@ -11,7 +11,7 @@ jobs:
           name: test
           script:
               - docker-compose build
-              - docker-compose run server --db mysql+pymysql://test:test@db/foobar --dry-run -p 42834
+              - docker-compose run server -v --db mysql+pymysql://test:test@db/foobar --dry-run -p 42834
           after_script: docker-compose down
         - stage: deploy
           name: deploy

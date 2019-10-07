@@ -1,6 +1,8 @@
 from collections import defaultdict
 from datetime import datetime
 
+from .util.vector import Vector
+
 
 class PlayerCollection:
     class GridElement:
@@ -16,59 +18,63 @@ class PlayerCollection:
             return (other is not None and
                     self.client == other.client)
 
-    def __init__(self):
+    def __init__(self, server_map):
         self.cell_size = 100
-        self.players = {}
+        self.characters = {}
         self.grid = defaultdict(set)
+        self.map = server_map
 
     def __iter__(self):
-        return iter(self.players.items())
+        return iter(self.characters.items())
 
     def get_coords(self, position):
-        x = int(position[0] / self.cell_size)
-        y = int(position[1] / self.cell_size)
-        return x, y
+        return position // self.cell_size
 
-    def add(self, client, player_wrapper):
-        self.players[client] = player_wrapper
-        coords = self.get_coords(player_wrapper.last_position)
+    def add(self, client, character):
+        self.characters[client] = character
+        coords = self.get_coords(character.last_position)
         self.grid[coords].add(PlayerCollection.GridElement(
-            client, player_wrapper.last_position))
+            client, character.last_position))
 
     def remove(self, client):
-        player_wrapper = self.players.pop(client)
-        if not player_wrapper:
+        character = self.characters.pop(client)
+        if not character:
             return
 
-        coords = self.get_coords(player_wrapper.last_position)
+        coords = self.get_coords(character.last_position)
         self.grid[coords].remove(PlayerCollection.GridElement(
-            client, player_wrapper.last_position))
+            client, character.last_position))
 
-    def update_player(self, client, player_wrapper):
-        old_player = self.players[client]
+    def update_character(self, client, character):
+        old_character = self.characters[client]
 
-        if old_player.last_position != player_wrapper.last_position:
-            self.update_position(client, player_wrapper.last_position)
+        if old_character.last_position != character.last_position:
+            self.update_position(client, character.last_position)
 
-        self.players[client] = player_wrapper
+        self.characters[client] = character
 
     def update_all_positions(self):
         now = datetime.now()
-        for client, player_wrapper in self.players.items():
+        for client in self.characters.keys():
             self.update_position(client, now=now)
 
     def update_position(self, client, position=None, now=None):
-        player_wrapper = self.players[client]
-        old_position = player_wrapper.last_position
+        character = self.characters[client]
+        old_position = character.last_position
 
         if not position:
-            player_wrapper.update_position(now)
-            position = player_wrapper.last_position
+            # Update position with collision resolution if not given
+            character.update_position(self.map, now)
+            position = character.last_position
 
+        if position == old_position:
+            return
+
+        # Update character grid if necessary
         old_coords = self.get_coords(old_position)
         new_coords = self.get_coords(position)
 
-        self.players[client].set_position(position)
+        self.characters[client].set_position(position)
 
         self.grid[old_coords].remove(PlayerCollection.GridElement(
             client, old_position))
@@ -80,21 +86,21 @@ class PlayerCollection:
         else:
             self.grid[old_coords].add(new_grid_element)
 
-    def get_players_in_range(self, center, radius):
+    def get_clients_in_range(self, center, radius):
         top_left_coords = self.get_coords(
-            (center[0] - radius, center[1] - radius))
+            center - Vector(radius, radius))
         bottom_right_coords = self.get_coords(
-            (center[0] + radius, center[1] + radius))
+            center + Vector(radius, radius))
 
         range_squared = radius * radius
         clients = []
 
-        for x in range(top_left_coords[0], bottom_right_coords[0] + 1):
-            for y in range(top_left_coords[1], bottom_right_coords[1] + 1):
-                for entity in self.grid[x, y]:
+        for x in range(top_left_coords.x, bottom_right_coords.x + 1):
+            for y in range(top_left_coords.y, bottom_right_coords.y + 1):
+                for entity in self.grid[Vector(x, y)]:
                     p = entity.position
-                    dx = p[0] - center[0]
-                    dy = p[1] - center[1]
+                    dx = p.x - center.x
+                    dy = p.y - center.y
                     distance_squared = dx * dx + dy * dy
                     if distance_squared <= range_squared:
                         clients.append(entity.client)
