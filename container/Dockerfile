@@ -4,6 +4,7 @@ MAINTAINER Mark Jennings <jenningsm42@gmail.com>
 COPY ./requirements.txt /server/
 COPY ./setup.py /server/
 COPY ./server /server/server
+COPY ./data /server/data
 WORKDIR /server
 
 RUN apk --update add git gcc musl-dev libffi-dev openssl-dev protobuf

@@ -3,3 +3,4 @@ click
 protobuf
 pymysql[rsa]
 sqlalchemy
+pyyaml

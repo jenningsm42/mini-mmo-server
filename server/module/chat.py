@@ -20,7 +20,7 @@ async def send_chat_message(message, client, server):
 
     with PlayerService() as service:
         player = service.get(client.player_id)
-        position = player.character.last_x, player.character.last_y
+        position = player.character.last_position
 
     await server.broadcast_in_range(Message(
         message_type=MessageType.receive_chat_message,

@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from server.server import register_handler
 from server.message_type import MessageType
 from server.message import Message
@@ -7,7 +5,7 @@ from server.message import Message
 from server.proto.PlayerMove_pb2 import (
     PlayerMove, OtherPlayerMove, PlayerStop, OtherPlayerStop)
 from server.service.player import PlayerService
-from server.player_wrapper import PlayerWrapper
+from server.util.vector import Vector
 
 
 @register_handler(MessageType.player_move)
@@ -21,20 +19,23 @@ async def player_move(message, client, server):
             raise Exception('Received player_move event for invalid player!')
 
         character = player.character
-        character.last_x = info.x
-        character.last_y = info.y
-        character.velocity_x = info.velocity_x
-        character.velocity_y = info.velocity_y
-        character.last_position_update = datetime.now()
+        character.set_position_synchronized(server.map, Vector(info.x, info.y))
 
-    server.players.update_player(client, PlayerWrapper(character))
+        # We sometimes get numbers like 1e-5, so set them to zero to reduce
+        # long running errors
+        clean_velocity = Vector(info.velocity_x, info.velocity_y)
+        clean_velocity.clear_zero_values()
+        character.velocity_x = clean_velocity.x
+        character.velocity_y = clean_velocity.y
+
+    server.players.update_character(client, character)
 
     broadcast_message = OtherPlayerMove()
     broadcast_message.player_id = client.player_id
-    broadcast_message.x = info.x
-    broadcast_message.y = info.y
-    broadcast_message.velocity_x = info.velocity_x
-    broadcast_message.velocity_y = info.velocity_y
+    broadcast_message.x = character.last_x
+    broadcast_message.y = character.last_y
+    broadcast_message.velocity_x = character.velocity_x
+    broadcast_message.velocity_y = character.velocity_y
 
     await server.broadcast(Message(
         message_type=MessageType.other_player_move,
@@ -53,18 +54,16 @@ async def player_stop(message, client, server):
             raise Exception('Received player_stop event for invalid player!')
 
         character = player.character
-        character.last_x = info.x
-        character.last_y = info.y
+        character.set_position_synchronized(server.map, Vector(info.x, info.y))
         character.velocity_x = 0
         character.velocity_y = 0
-        character.last_position_update = datetime.now()
 
-    server.players.update_player(client, PlayerWrapper(character))
+    server.players.update_character(client, character)
 
     broadcast_message = OtherPlayerStop()
     broadcast_message.player_id = client.player_id
-    broadcast_message.x = info.x
-    broadcast_message.y = info.y
+    broadcast_message.x = character.last_x
+    broadcast_message.y = character.last_y
 
     await server.broadcast(Message(
         message_type=MessageType.other_player_stop,
